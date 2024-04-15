@@ -1,0 +1,23 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+@using H5ServersideToDoList.Data;
+@using Microsoft.AspNetCore.Authorization
+
+
+
+@inject IHttpContextAccessor httpContextAccessor
+
+
+<PageTitle>Home</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+
+        <RegisterCpr />
+    </Authorized>
+    <NotAuthorized>
+        <h1>Not authorized</h1>
+        <h2>Login to enter cpr</h2>
+    </NotAuthorized>
+</AuthorizeView>

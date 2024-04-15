@@ -1,0 +1,89 @@
+@rendermode InteractiveServer
+
+@using H5ServersideToDoList.Data.Models.Entities;
+@using Microsoft.AspNetCore.Authorization
+@using H5ServersideToDoList.Services
+
+
+@inject Services.ICprService _cprService
+@inject Services.IHashingService _hashingService
+
+@inject IHttpContextAccessor httpContextAccessor
+@attribute [Authorize]
+
+
+<PageTitle>Register CPR</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+
+        @if (!isVerified)
+        {
+            <div>
+                <div>
+                    <h1>User: @context.User.Identity?.Name</h1>
+                    <h3>Enter CPR-number:</h3>
+                    <input type="text" @bind-value="@cprNumber" />
+                    <button role="button" @onclick="registerCpr">
+                        Submit
+                    </button>
+                </div>
+
+                @if (failed)
+                {
+                    <b1>Wrong CPR entered</b1>
+                }
+            </div>
+        }
+        else
+        {
+            <!--
+            <ToDo />
+                -->
+                
+        }
+
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    private bool isVerified = false;
+    private bool loading = false;
+    private string cprNumber = string.Empty;
+    private bool failed = false;
+
+    protected async Task registerCpr()
+    {
+        if (!loading)
+        {
+            loading = true;
+            string userEmail = httpContextAccessor!.HttpContext!.User!.Identity!.Name!;
+            try
+            {
+                Cpr cpr = await _cprService.CheckExisitingCpr(userEmail);
+            }
+            catch(Exception err)
+        {
+                Console.WriteLine(err)
+        }
+
+            if (cpr.UserMail == userEmail)
+            {
+
+                var response = await _cprService.AddCprToUser(cprNumber, userEmail);
+                if (response)
+                {
+                    failed = false;
+                    isVerified = true;
+                }
+                else
+                {
+                    failed = true;
+                    isVerified = false;
+                }
+            }
+
+            loading = false;
+        }
+    }
+    }

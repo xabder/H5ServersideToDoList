@@ -1,0 +1,58 @@
+@using H5ServersideToDoList.Data.Models.Entities;
+@using H5ServersideToDoList.Services
+
+@inject Services.IToDoService _toDoService
+@inject IHttpContextAccessor httpContextAccessor
+
+<PageTitle>Todo</PageTitle>
+
+<AuthorizeView>
+    <h1>TODO!</h1>
+
+    <div>
+        <input type="text" @bind-value="@newTitle" />
+        <button @onclick="addTodo">Add</button>
+    </div>
+    <div>
+        <table>
+            @foreach (ToDoItem item in todoItems)
+            {
+                <tr>
+                    <td>
+                        @item.Title
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+
+</AuthorizeView>
+@code {
+    private string newTitle = string.Empty;
+    private List<ToDoItem>? todoItems;
+    private string userMail = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userMail = httpContextAccessor!.HttpContext!.User!.Identity!.Name!;
+        await reload();
+
+    }
+
+    protected async Task reload()
+    {
+        await getToDoItems();
+        StateHasChanged();
+    }
+
+    protected async Task addTodo()
+    {
+        await _toDoService.AddTask(userMail, newTitle);
+        await reload();
+    }
+
+    protected async Task getToDoItems()
+    {
+        todoItems = await _toDoService.GetToDoItems(userMail);
+    }
+}
